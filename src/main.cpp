@@ -18,115 +18,14 @@
 #include <URDFdir.h>
 #include <cmath>
 #include <chrono>
-#include <cstdlib>
-#include <fstream>
+
 
 int main()
 {
-    bool isWindows = false;
-#ifdef _WIN32
-    isWindows = true;
-#endif
-
-    const char * env_var_value = std::getenv("GAZEBO_MODEL_PATH");
-
-    std::stringstream env_var_string(env_var_value);
-
-    std::string individualPath;
-    std::vector<std::string> pathList;
-
-    while(std::getline(env_var_string, individualPath, isWindows ? ';' : ':'))
-    {
-       pathList.push_back(individualPath);
-    }
-
-    auto cleanPathSeparator = [isWindows](const std::string& filename)->std::string
-    {
-        std::string output = filename;
-        char pathSeparator = isWindows ? '\\' : '/';
-        char wrongPathSeparator = isWindows ? '/' : '\\';
-
-        for (size_t i = 0; i < output.size(); ++i)
-        {
-            if (output[i] == wrongPathSeparator)
-            {
-                output[i] = pathSeparator;
-            }
-        }
-
-        return filename;
-
-    };
-
-    auto isFileExisting = [cleanPathSeparator](const std::string& filename)->bool
-    {
-        if (FILE *file = fopen(cleanPathSeparator(filename).c_str(), "r")) {
-            fclose(file);
-            return true;
-        } else {
-            return false;
-        }
-    };
-
-    auto getFilePath = [isFileExisting](const std::string& filename, const std::string& prefixToRemove, const std::vector<std::string>& paths)
-    {
-        if(isFileExisting(filename))
-        {
-            return filename;
-        }
-
-        if (filename.substr(0, prefixToRemove.size()) == prefixToRemove)
-        {
-            std::string filename_noprefix = filename;
-            filename_noprefix.erase(0, prefixToRemove.size());
-            for (size_t i = 0; i < paths.size(); ++i)
-            {
-                std::string testPath;
-                testPath = paths[i] + filename_noprefix;
-                if (isFileExisting(testPath))
-                {
-                    return testPath;
-                }
-            }
-
-        }
-
-        return filename; //By default return the input;
-    };
-
 
     iDynTree::ModelLoader modelLoader;
     std::string pathToModel = yarp::os::ResourceFinder::getResourceFinderSingleton().findFileByName("model.urdf");
     modelLoader.loadModelFromFile(pathToModel);
-
-    iDynTree::Model loadedModel = modelLoader.model();
-    std::vector<std::vector<iDynTree::SolidShape*>>& shapesContainer = loadedModel.visualSolidShapes().getLinkSolidShapes();
-
-    for (size_t i = 0; i < shapesContainer.size(); ++i)
-    {
-        std::vector<iDynTree::SolidShape*>& shapes = shapesContainer[i];
-
-        for (size_t s = 0; s < shapes.size(); ++s)
-        {
-            iDynTree::SolidShape* shape = shapes[s];
-            if (shape->isExternalMesh())
-            {
-                iDynTree::ExternalMesh* mesh = shape->asExternalMesh();
-                std::string originalPath = mesh->getFilename();
-                std::string otherMeshFile = getFilePath(originalPath, "package:/", pathList);
-                mesh->setFilename(otherMeshFile);
-                iDynTree::Material material;
-                iDynTree::Vector4 color;
-                color[0] = 0.0; //r
-                color[1] = 0.0; //g
-                color[2] = 0.0; //b
-                color[3] = 1.0; //a
-                material.setColor(color);
-                mesh->setMaterial(material);
-            }
-        }
-    }
-
 
     iDynTree::Visualizer viz;
     iDynTree::VisualizerOptions options, textureOptions;
@@ -153,8 +52,7 @@ int main()
     viz.textureEnviroment().setBackgroundColor(iDynTree::ColorViz(0.0, 0.0, 0.0, 0.0));
     viz.textureEnviroment().setFloorGridColor(iDynTree::ColorViz(0.0, 1.0, 0.0, 1.0));
 
-
-    viz.addModel(loadedModel, "robot");
+    viz.addModel(modelLoader.model(), "robot");
 
     yarp::sig::FlexImage image;
     image.setPixelCode(VOCAB_PIXEL_RGBA);
@@ -182,7 +80,7 @@ int main()
     long minimumMicroSec = std::round(1e6 / (double) desiredFPS);
 
     iDynTree::Transform wHb = iDynTree::Transform::Identity();
-    iDynTree::VectorDynSize joints(loadedModel.getNrOfPosCoords());
+    iDynTree::VectorDynSize joints(modelLoader.model().getNrOfPosCoords());
     joints.zero();
     viz.modelViz("robot").setPositions(wHb, joints);
 
