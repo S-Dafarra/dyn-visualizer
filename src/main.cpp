@@ -23,6 +23,11 @@
 
 int main()
 {
+    bool isWindows = false;
+#ifdef _WIN32
+    isWindows = true;
+#endif
+
     const char * env_var_value = std::getenv("GAZEBO_MODEL_PATH");
 
     std::stringstream env_var_string(env_var_value);
@@ -30,14 +35,32 @@ int main()
     std::string individualPath;
     std::vector<std::string> pathList;
 
-    while(std::getline(env_var_string, individualPath, ':'))
+    while(std::getline(env_var_string, individualPath, isWindows ? ';' : ':'))
     {
        pathList.push_back(individualPath);
     }
 
-    auto isFileExisting = [](const std::string& filename)->bool
+    auto cleanPathSeparator = [isWindows](const std::string& filename)->std::string
     {
-        if (FILE *file = fopen(filename.c_str(), "r")) {
+        std::string output = filename;
+        char pathSeparator = isWindows ? '\\' : '/';
+        char wrongPathSeparator = isWindows ? '/' : '\\';
+
+        for (size_t i = 0; i < output.size(); ++i)
+        {
+            if (output[i] == wrongPathSeparator)
+            {
+                output[i] = pathSeparator;
+            }
+        }
+
+        return filename;
+
+    };
+
+    auto isFileExisting = [cleanPathSeparator](const std::string& filename)->bool
+    {
+        if (FILE *file = fopen(cleanPathSeparator(filename).c_str(), "r")) {
             fclose(file);
             return true;
         } else {
