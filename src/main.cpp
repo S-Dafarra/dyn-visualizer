@@ -18,18 +18,59 @@
 #include <URDFdir.h>
 #include <cmath>
 #include <chrono>
-#include <QProcessEnvironment>
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
-
+#include <cstdlib>
+#include <fstream>
 
 int main()
 {
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    QString gazeboModelPath = env.value("GAZEBO_MODEL_PATH");
-    QStringList paths = gazeboModelPath.split(":");
-    QDir::setSearchPaths("meshPrefix", paths);
+    const char * env_var_value = std::getenv("GAZEBO_MODEL_PATH");
+
+    std::stringstream env_var_string(env_var_value);
+
+    std::string individualPath;
+    std::vector<std::string> pathList;
+
+    while(std::getline(env_var_string, individualPath, ':'))
+    {
+       pathList.push_back(individualPath);
+    }
+
+    auto isFileExisting = [](const std::string& filename)->bool
+    {
+        if (FILE *file = fopen(filename.c_str(), "r")) {
+            fclose(file);
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    auto getFilePath = [isFileExisting](const std::string& filename, const std::string& prefixToRemove, const std::vector<std::string>& paths)
+    {
+        if(isFileExisting(filename))
+        {
+            return filename;
+        }
+
+        if (filename.substr(0, prefixToRemove.size()) == prefixToRemove)
+        {
+            std::string filename_noprefix = filename;
+            filename_noprefix.erase(0, prefixToRemove.size());
+            for (size_t i = 0; i < paths.size(); ++i)
+            {
+                std::string testPath;
+                testPath = paths[i] + filename_noprefix;
+                if (isFileExisting(testPath))
+                {
+                    return testPath;
+                }
+            }
+
+        }
+
+        return filename; //By default return the input;
+    };
+
 
     iDynTree::ModelLoader modelLoader;
     std::string pathToModel = yarp::os::ResourceFinder::getResourceFinderSingleton().findFileByName("model.urdf");
@@ -49,12 +90,8 @@ int main()
             {
                 iDynTree::ExternalMesh* mesh = shape->asExternalMesh();
                 std::string originalPath = mesh->getFilename();
-                QString meshPath = QString::fromStdString(originalPath);
-                meshPath.replace("package://", "meshPrefix:");
-                QFile meshFile(meshPath);
-                QFileInfo meshFileInfo(meshFile);
-                std::string meshFileInfoPath = meshFileInfo.absoluteFilePath().toStdString();
-                mesh->setFilename(meshFileInfoPath);
+                std::string otherMeshFile = getFilePath(originalPath, "package:/", pathList);
+                mesh->setFilename(otherMeshFile);
                 iDynTree::Material material;
                 iDynTree::Vector4 color;
                 color[0] = 0.0; //r

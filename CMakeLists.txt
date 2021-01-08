@@ -107,7 +107,6 @@ endif()
 find_package(Eigen3 3.2.92 REQUIRED)
 find_package(iDynTree 2.0.3 REQUIRED)
 find_package(YARP)
-find_package(Qt5 COMPONENTS Core REQUIRED)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/data)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/data/URDFdir.h.in" "${CMAKE_CURRENT_BINARY_DIR}/data/URDFdir.h" @ONLY)
@@ -120,8 +119,7 @@ set(HDR ${CMAKE_CURRENT_BINARY_DIR}/data/URDFdir.h)
 add_executable(dyn-visualizer ${SRC} ${HDR})
 target_link_libraries(dyn-visualizer PRIVATE Eigen3::Eigen
                                              iDynTree::idyntree-core iDynTree::idyntree-modelio-urdf iDynTree::idyntree-visualization
-                                             ${YARP_LIBRARIES}
-                                             Qt5::Core)
+                                             ${YARP_LIBRARIES})
 
 ### Compile- and install-related commands.
 # Create and install CMake configuration files for your project that are
