@@ -57,8 +57,8 @@ int main()
 
 //    viz.camera().setPosition(iDynTree::Position(2.0, 0.5, 0.5));
 //    viz.camera().setTarget(iDynTree::Position(0.4, 0.0, 0.5));
-    viz.camera().setPosition(iDynTree::Position(2.0, 0.0, 1.0));
-    viz.camera().setTarget(iDynTree::Position(0.0, 0.0, 0.0));
+    viz.camera().setPosition(iDynTree::Position(1.2, 0.0, 0.5));
+    viz.camera().setTarget(iDynTree::Position(-0.15, 0.0, 0.15));
     viz.camera().animator()->enableMouseControl(true);
 
     double sqrt2 = std::sqrt(2.0);
