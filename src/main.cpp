@@ -20,7 +20,9 @@
 #include <URDFdir.h>
 #include <cmath>
 #include <chrono>
+#include <thread>
 
+using namespace std::chrono_literals;
 
 int main()
 {
@@ -35,7 +37,7 @@ int main()
 
     std::vector<std::string> controlBoards = {"head", "torso", "left_arm", "right_arm", "left_leg", "right_leg"};
 
-    std::string robotPrefix = "icubSim";
+    std::string robotPrefix = "icub";
 
     bool connectToRobot = true;
 
@@ -123,11 +125,14 @@ int main()
 
     std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point lastSent = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point lastViz = std::chrono::steady_clock::now();
 
     unsigned int desiredFPS = 30;
+    unsigned int maxVizFPS = 65;
     bool mirrorImage = false;
 
     long minimumMicroSec = std::round(1e6 / (double) desiredFPS);
+    long minimumMicroSecViz = std::round(1e6 / (double) maxVizFPS);
 
     iDynTree::Transform wHb = iDynTree::Transform::Identity();
     iDynTree::VectorDynSize joints(jointList.size());
@@ -135,6 +140,13 @@ int main()
 
     while(viz.run())
     {
+        now = std::chrono::steady_clock::now();
+	if (std::chrono::duration_cast<std::chrono::microseconds>(now - lastViz).count() < minimumMicroSecViz)
+        {
+            std::this_thread::sleep_for(1ms);
+            continue;
+        }
+
         joints.zero();
         if (connectToRobot)
         {
@@ -148,7 +160,7 @@ int main()
         viz.modelViz("robot").setPositions(wHb, joints);
 
         viz.draw();
-        now = std::chrono::steady_clock::now();
+        lastViz = std::chrono::steady_clock::now();
 
         if (std::chrono::duration_cast<std::chrono::microseconds>(now - lastSent).count() >= minimumMicroSec)
         {
