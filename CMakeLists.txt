@@ -105,7 +105,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 find_package(Eigen3 3.2.92 REQUIRED)
-find_package(iDynTree 2.0.3 REQUIRED)
+find_package(iDynTree 2.0.100 REQUIRED)
 find_package(YARP)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/data)

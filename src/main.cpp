@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2020 Fondazione Istituto Italiano di Tecnologia
- *
- * Licensed under either the GNU Lesser General Public License v3.0 :
- * https://www.gnu.org/licenses/lgpl-3.0.html
- * or the GNU Lesser General Public License v2.1 :
- * https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
- * at your option.
- */
+     * Copyright (C) 2020 Fondazione Istituto Italiano di Tecnologia
+     *
+     * Licensed under either the GNU Lesser General Public License v3.0 :
+     * https://www.gnu.org/licenses/lgpl-3.0.html
+     * or the GNU Lesser General Public License v2.1 :
+     * https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+     * at your option.
+     */
 
 #include <iDynTree/ModelIO/ModelLoader.h>
 #include <iDynTree/Visualizer.h>
@@ -47,29 +47,27 @@ int main()
 
     iDynTree::Visualizer viz;
     iDynTree::VisualizerOptions options, textureOptions;
-//    options.winWidth = 1920;
-//    options.winHeight = 1080;
-    textureOptions.winWidth = 400;
-    textureOptions.winHeight = 400;
+    //    options.winWidth = 1920;
+    //    options.winHeight = 1080;
 
     viz.init(options);
     iDynTree::ITexture* textureInterface = viz.textures().add("AdditionalTexture", textureOptions);
 
-//    viz.camera().setPosition(iDynTree::Position(2.0, 0.5, 0.5));
-//    viz.camera().setTarget(iDynTree::Position(0.4, 0.0, 0.5));
+    //    viz.camera().setPosition(iDynTree::Position(2.0, 0.5, 0.5));
+    //    viz.camera().setTarget(iDynTree::Position(0.4, 0.0, 0.5));
     viz.camera().setPosition(iDynTree::Position(1.2, 0.0, 0.5));
     viz.camera().setTarget(iDynTree::Position(-0.15, 0.0, 0.15));
     viz.camera().animator()->enableMouseControl(true);
 
     double sqrt2 = std::sqrt(2.0);
     viz.enviroment().lightViz("sun").setDirection(iDynTree::Direction(-0.5/sqrt2, 0, -0.5/sqrt2));
-//    viz.enviroment().setFloorGridColor(iDynTree::ColorViz(0.0, 1.0, 0.0, 1.0));
+    //    viz.enviroment().setFloorGridColor(iDynTree::ColorViz(0.0, 1.0, 0.0, 1.0));
 
     textureInterface->environment().lightViz("sun").setDirection(iDynTree::Direction(-0.5/sqrt2, 0, -0.5/sqrt2));
     textureInterface->environment().setElementVisibility("floor_grid", false);
     textureInterface->environment().setElementVisibility("world_frame", false);
     textureInterface->environment().setBackgroundColor(iDynTree::ColorViz(0.0, 0.0, 0.0, 0.0));
-//    textureInterface->environment().setFloorGridColor(iDynTree::ColorViz(0.0, 1.0, 0.0, 1.0));
+    //    textureInterface->environment().setFloorGridColor(iDynTree::ColorViz(0.0, 1.0, 0.0, 1.0));
 
     viz.addModel(modelLoader.model(), "robot");
 
@@ -141,7 +139,7 @@ int main()
     while(viz.run())
     {
         now = std::chrono::steady_clock::now();
-	if (std::chrono::duration_cast<std::chrono::microseconds>(now - lastViz).count() < minimumMicroSecViz)
+        if (std::chrono::duration_cast<std::chrono::microseconds>(now - lastViz).count() < minimumMicroSecViz)
         {
             std::this_thread::sleep_for(1ms);
             continue;
@@ -182,7 +180,7 @@ int main()
                     }
 
                     yarp::sig::PixelRgb& pixelYarp = *(reinterpret_cast<yarp::sig::PixelRgb*>(
-                                                            image.getPixelAddress(width, pixelImage.height)));
+                                                           image.getPixelAddress(width, pixelImage.height)));
 
                     pixelYarp.r = pixelImage.r;
                     pixelYarp.g = pixelImage.g;
